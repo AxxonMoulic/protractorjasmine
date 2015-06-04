@@ -31,7 +31,7 @@ describe( 'Start-new-observation', function () {
 		observidence.startObsBtn.click();
 		browser.waitForAngular();
 		observidence.setStartObservationInfo( 'SchoolName', 0 ); // for Location use 'SchoolName'
-		observidence.setStartObservationInfo( 'FirstName', 1 ); // for Observee use 'FirstName'
+		observidence.setStartObservationInfo( 'FirstName', 0 ); // for Observee use 'FirstName'
 		observidence.setStartObservationInfo( 'name', 0 ); // for Template use 'name'
 		observidence.continueAndStartBtn.click();
 		browser.waitForAngular();
