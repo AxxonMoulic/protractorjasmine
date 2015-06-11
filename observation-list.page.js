@@ -27,9 +27,12 @@
 		return pageObj.element( by.css( '[ng-click="selectPage(page.number, $event)"]' ) );
 	};
 
-	var setMonth = function ( index ) {
-		element( by.css( '[ng-click = "toggleMode()"]' ) ).get( index ).click();
-		element( by.css( '[ng-model = "date"]' ) ).get( index ).element( by.css( '[ng-switch-when="month"] [ng-repeat="row in rows track by $index"]' ) ).get( 1 ).element( by.css( '[ng-repeat="dt in row track by dt.date"]' ) ).get( 1 ).element( by.css( '[ng-click="select(dt.date)"]' ) ).get( 0 ).click()
+	var searchResult = function ( item, filter ) {
+		return this.tableForm.get( item ).all( by.css( '.obs-link:not(.ng-hide)' ) ).get( filter );
+	};
+
+	var searchAll = function ( item, text ) {
+		return this.tableForm.get( item ).all( by.cssContainingText( '.obs-link:not(.ng-hide)', text ) ).get( 0 );
 	};
 
 	var ObservidencePage = function () {
@@ -48,9 +51,6 @@
 		this.startObsBtn         = observidencePage.element( by.css( '[data-ng-click="vm.openModal()"]' ) );
 		this.continueAndStartBtn = element( by.css( '[data-ng-click="vm.submitObs()"]' ) );
 
-		this.startDateBtn = observidencePage.element( by.css( '[data-ng-click="vm.startOpen($event)"]' ) );
-		this.endDateBtn   = observidencePage.element( by.css( '[data-ng-click="vm.endOpen($event)"]' ) );
-
 		this.pageNavBtn  = element.all( by.repeater( 'page in pages track by $index' ) );
 	};
 
@@ -60,6 +60,8 @@
 	ObservidencePage.prototype.searchText              = searchText;
 	ObservidencePage.prototype.dropDownFilterBtn       = dropDownFilterBtn;
 	ObservidencePage.prototype.paginationItem          = paginationItem;
+	ObservidencePage.prototype.searchResult            = searchResult;
+	ObservidencePage.prototype.searchAll               = searchAll;
 
 	module.exports = ObservidencePage;
 } )();
