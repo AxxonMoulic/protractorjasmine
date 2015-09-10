@@ -23,6 +23,7 @@ describe( 'Observation Page', function () {
 		loginPage.login( 'testfoo', 'testfoo' );
 		browser.waitForAngular();
 		observidence.navigate();
+
 	} );
 
 	afterEach( function () {
@@ -35,6 +36,56 @@ describe( 'Observation Page', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
 			expect( observidence.isDateSubmitted.getText() ).toBe( 'Date Submitted' );
+		} );
+
+		it( 'should change the FROM to current date and show corresponding obs list', function () {
+			var mydate = new Date();
+			var currentmonth = mydate.getMonth();
+			var submitteddate;
+			submitteddate = ( '0' + ( mydate.getMonth() + 1 ) ).slice( -2 ) + '/' + ( '0' + mydate.getDate() ).slice( -2 ) + '/' + mydate.getFullYear();
+			observidence.navTab.click();
+			observidence.fromDateBtn.click();
+			observidence.clickFromMonth.click();
+			observidence.selectFromMonth( currentmonth ).click();
+			observidence.clickableFromDates.count().then( function ( count ) {
+				count = count - 1;
+				observidence.clickableFromDates.then( function ( date ) {
+					observidence.clickCalendarDate( date[ count ] ).click();
+				} );
+			} );
+			observidence.tableForm.count().then( function ( count ) {
+				for ( var row = 0; row < count; row++ ) {
+					expect( observidence.searchResult( row, 4 ).getText() ).toContain( submitteddate ); // use 4 when evaluating Submitted Date column
+				}
+			} );
+		} );
+
+		it( 'should change the FROM and To date to yesterday and show corresponding obs list', function () {
+			var mydate = new Date();
+			var currentmonth = mydate.getMonth();
+			var pastdatestring;
+			pastdatestring = ( '0' + ( mydate.getMonth() + 1 ) ).slice( -2 ) + '/' + ( '0' + ( mydate.getDate() - 1 ) ).slice( -2 ) + '/' + mydate.getFullYear();
+			observidence.navTab.click();
+			observidence.fromDateBtn.click();
+			observidence.clickFromMonth.click();
+			observidence.selectFromMonth( currentmonth ).click();
+			observidence.clickableFromDates.count().then( function ( count ) {
+				count = count - 2;
+				observidence.clickableFromDates.then( function ( date ) {
+					observidence.clickCalendarDate( date[ count ] ).click();
+				} );
+			} );
+			observidence.toDateBtn.click();
+			observidence.clickToMonth.click();
+			observidence.selectToMonth( currentmonth ).click();
+			observidence.clickableToDates.then( function ( date ) {
+				observidence.clickCalendarDate( date[ 0 ] ).click();
+			} );
+			observidence.tableForm.count().then( function ( count ) {
+				for ( var row = 0; row < count; row++ ) {
+					expect( observidence.searchResult( row, 4 ).getText() ).toContain( pastdatestring ); // use 4 when evaluating Submitted Date column
+				}
+			} );
 		} );
 
 		it( 'should sort the list by Name', function () {
@@ -57,7 +108,7 @@ describe( 'Observation Page', function () {
 			expect( observidence.lastRow.first().getText() ).toBe( holder );
 		} );
 
-		it( 'should sort the list by Observee', function () {
+		it( 'should sort the list by Invitee', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
 			observidence.sortColumnName( 'observee' ).click();
@@ -137,34 +188,22 @@ describe( 'Observation Page', function () {
 			expect( observidence.lastRow.get( 4 ).getText() ).toBe( holder );
 		} );
 
-		it( 'should sort the list by Total Score', function () {
+		it( 'should display No Results Found if text is not found', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
-			observidence.sortColumnName( 'finalScore' ).click();
+			observidence.searchText( 'obama' );
 			browser.waitForAngular();
-			var holder = observidence.firstRow.last().getText();
-			observidence.sortColumnName( 'finalScore' ).click();
-			browser.waitForAngular();
-			observidence.pageNavBtn.count().then( function ( count ) {
-			if ( count > 1 ) {
-				observidence.pageNavBtn.then( function ( page ) {
-					for ( var i = 1; i < count; i++ ) {
-						observidence.paginationItem( page[ i ] ).click();
-					}
-				} );
-			}
-		} );
-			expect( observidence.lastRow.last().getText() ).toBe( holder );
+			expect( observidence.filterNoResult.getText() ).toBe( 'No results found for given date range or filter.' );
 		} );
 
 		it( 'should search the text without filter', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
-			observidence.searchText( 'hello' );
+			observidence.searchText( 'hardy' );
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchAll( row, 'Hello' ).getText() ).toContain( 'Hello' );
+					expect( observidence.searchAll( row, 'Hardy' ).getText() ).toContain( 'Hardy' );
 				}
 			} );
 		} );
@@ -172,27 +211,27 @@ describe( 'Observation Page', function () {
 		it( 'should search text using Name filter', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
-			observidence.searchText( 'jones' );
+			observidence.searchText( 'hardy' );
 			browser.waitForAngular();
 			observidence.dropDownFilterBtn( 'Name' ).click();
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchResult( row, 0 ).getText() ).toContain( 'Jones' ); // use 0 when evaluating Name column
+					expect( observidence.searchResult( row, 0 ).getText() ).toContain( 'Hardy' ); // use 0 when evaluating Name column
 				}
 			} );
 		} );
 
-		it( 'should search text using Observee filter', function () {
+		it( 'should search text using Invitee filter', function () {
 			observidence.navTab.click();
 			browser.waitForAngular();
-			observidence.searchText( 'carol' );
+			observidence.searchText( 'jones' );
 			browser.waitForAngular();
-			observidence.dropDownFilterBtn( 'Observee' ).click();
+			observidence.dropDownFilterBtn( 'Invitee' ).click();
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchResult( row, 1 ).getText() ).toContain( 'Carol' ); // use 1 when evaluating Observee column
+					expect( observidence.searchResult( row, 1 ).getText() ).toContain( 'Jones' ); // use 1 when evaluating Observee column
 				}
 			} );
 		} );
@@ -264,6 +303,54 @@ describe( 'Observation Page', function () {
 			expect( observidence.isDateStarted.getText() ).toBe( 'Date Started' );
 		} );
 
+		it( 'should change the FROM to current date and show corresponding obs list', function () {
+			var mydate = new Date();
+			var currentmonth = mydate.getMonth();
+			var submitteddate;
+			submitteddate = ( '0' + ( mydate.getMonth() + 1 ) ).slice( -2 ) + '/' + ( '0' + mydate.getDate() ).slice( -2 ) + '/' + mydate.getFullYear();
+			observidence.fromDateBtn.click();
+			observidence.clickFromMonth.click();
+			observidence.selectFromMonth( currentmonth ).click();
+			observidence.clickableFromDates.count().then( function ( count ) {
+				count = count - 1;
+				observidence.clickableFromDates.then( function ( date ) {
+					observidence.clickCalendarDate( date[ count ] ).click();
+				} );
+			} );
+			observidence.tableForm.count().then( function ( count ) {
+				for ( var row = 0; row < count; row++ ) {
+					expect( observidence.searchResult( row, 4 ).getText() ).toContain( submitteddate ); // use 4 when evaluating Submitted Date column
+				}
+			} );
+		} );
+
+		it( 'should change the FROM and To date to yesterday and show corresponding obs list', function () {
+			var mydate = new Date();
+			var currentmonth = mydate.getMonth();
+			var pastdatestring;
+			pastdatestring = ( '0' + ( mydate.getMonth() + 1 ) ).slice( -2 ) + '/' + ( '0' + ( mydate.getDate() - 1 ) ).slice( -2 ) + '/' + mydate.getFullYear();
+			observidence.fromDateBtn.click();
+			observidence.clickFromMonth.click();
+			observidence.selectFromMonth( currentmonth ).click();
+			observidence.clickableFromDates.count().then( function ( count ) {
+				count = count - 2;
+				observidence.clickableFromDates.then( function ( date ) {
+					observidence.clickCalendarDate( date[ count ] ).click();
+				} );
+			} );
+			observidence.toDateBtn.click();
+			observidence.clickToMonth.click();
+			observidence.selectToMonth( currentmonth ).click();
+			observidence.clickableToDates.then( function ( date ) {
+				observidence.clickCalendarDate( date[ 0 ] ).click();
+			} );
+			observidence.tableForm.count().then( function ( count ) {
+				for ( var row = 0; row < count; row++ ) {
+					expect( observidence.searchResult( row, 4 ).getText() ).toContain( pastdatestring ); // use 4 when evaluating Submitted Date column
+				}
+			} );
+		} );
+
 		it( 'should sort the list by Name', function () {
 			observidence.sortColumnName( 'name' ).click();
 			browser.waitForAngular();
@@ -282,7 +369,7 @@ describe( 'Observation Page', function () {
 			expect( observidence.lastRow.first().getText() ).toBe( holder );
 		} );
 
-		it( 'should sort the list by Observee', function () {
+		it( 'should sort the list by Invitee', function () {
 			observidence.sortColumnName( 'observee' ).click();
 			browser.waitForAngular();
 			var holder = observidence.firstRow.get( 1 ).getText();
@@ -354,36 +441,42 @@ describe( 'Observation Page', function () {
 			expect( observidence.lastRow.last().getText() ).toBe( holder );
 		} );
 
+		it( 'should display No Results Found if text is not found', function () {
+			observidence.searchText( 'obama' );
+			browser.waitForAngular();
+			expect( observidence.filterNoResult.getText() ).toBe( 'No results found for given date range or filter.' );
+		} );
+
 		it( 'should search the text without filter', function () {
-			observidence.searchText( 'hello' );
+			observidence.searchText( 'neena' );
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchAll( row, 'Hello' ).getText() ).toContain( 'Hello' );
+					expect( observidence.searchAll( row, 'Neena' ).getText() ).toContain( 'Neena' );
 				}
 			} );
 		} );
 
 		it( 'should search text using Name filter', function () {
-			observidence.searchText( 'jones' );
+			observidence.searchText( 'brad' );
 			browser.waitForAngular();
 			observidence.dropDownFilterBtn( 'Name' ).click();
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchResult( row, 0 ).getText() ).toContain( 'Jones' ); // use 0 when evaluating Name column
+					expect( observidence.searchResult( row, 0 ).getText() ).toContain( 'Braddock' ); // use 0 when evaluating Name column
 				}
 			} );
 		} );
 
-		it( 'should search text using Observee filter', function () {
-			observidence.searchText( 'carol' );
+		it( 'should search text using Invitee filter', function () {
+			observidence.searchText( 'eli' );
 			browser.waitForAngular();
-			observidence.dropDownFilterBtn( 'Observee' ).click();
+			observidence.dropDownFilterBtn( 'Invitee' ).click();
 			browser.waitForAngular();
 			observidence.tableForm.count().then( function ( count ) {
 				for ( var row = 0; row < count; row++ ) {
-					expect( observidence.searchResult( row, 1 ).getText() ).toContain( 'Carol' ); // use 1 when evaluating Observee column
+					expect( observidence.searchResult( row, 1 ).getText() ).toContain( 'Elizabeth' ); // use 1 when evaluating Observee column
 				}
 			} );
 		} );
